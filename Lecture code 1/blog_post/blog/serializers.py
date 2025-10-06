@@ -25,11 +25,12 @@ class BannerImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image']
 
 class BlogPostListSerializer(serializers.ModelSerializer):
-    banner_image = BannerImageSerializer(read_only=True)
+    banner_image = serializers.SerializerMethodField()
 
-    @staticmethod
-    def get_banner_image(obj):
-        return obj.banner_image.image
+    def get_banner_image(self, obj):
+        if hasattr(obj, "banner_image") and obj.banner_image and obj.banner_image.image:
+            return obj.banner_image.image.url
+        return None
 
     class Meta:
         model = BlogPost
@@ -59,11 +60,16 @@ class BlogPostCreateUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         banner_image = validated_data.pop('banner_image', None)
-        BlogPost.objects.filter(id=instance.id).update(**validated_data)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
         if banner_image:
-            if BannerImage.objects.filter(blog_post=instance).exists():
+            if hasattr(instance, 'banner_image') and instance.banner_image is not None:
                 instance.banner_image.image = banner_image
                 instance.banner_image.save()
             else:
                 BannerImage.objects.create(blog_post=instance, image=banner_image)
+
         return instance
