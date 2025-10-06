@@ -28,6 +28,10 @@ class BannerImageSerializer(serializers.ModelSerializer):
 class BlogPostListSerializer(serializers.ModelSerializer):
     banner_image = BannerImageSerializer(read_only=True)
 
+    @staticmethod
+    def get_banner_image(obj):
+        return obj.banner_image.image
+
     class Meta:
         model = BlogPost
         fields = ['id', 'title', 'category', 'banner_image']
