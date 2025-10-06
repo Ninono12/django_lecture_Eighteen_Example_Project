@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from blog.models import BlogPost, BannerImage, Author
 
-
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         fields = kwargs.pop('fields', None)
